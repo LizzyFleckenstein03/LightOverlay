@@ -36,7 +36,7 @@ public class LightOverlayRenderer implements Consumer<PoseStack> {
     public void accept(PoseStack poses) {
         if (LightOverlay.enabled) {
             LocalPlayer playerEntity = minecraft.player;
-            BlockPos playerPos = new BlockPos(playerEntity.getX(), playerEntity.getY(), playerEntity.getZ());
+            BlockPos playerPos = BlockPos.containing(playerEntity.getX(), playerEntity.getY(), playerEntity.getZ());
             int playerPosX = playerPos.getX() >> 4;
             int playerPosY = playerPos.getY() >> 5;
             int playerPosZ = playerPos.getZ() >> 4;
@@ -45,7 +45,7 @@ public class LightOverlayRenderer implements Consumer<PoseStack> {
             int chunkRange = LightOverlay.getChunkRange();
             
             if (LightOverlay.showNumber) {
-                renderLevels(new PoseStack(), camera, playerPos, playerPosX, playerPosY, playerPosZ, chunkRange, collisionContext);
+                renderLevels(poses, camera, playerPos, playerPosX, playerPosY, playerPosZ, chunkRange, collisionContext);
             } else {
                 renderCrosses(poses, camera, playerPos, playerPosX, playerPosY, playerPosZ, chunkRange, collisionContext);
             }
@@ -53,7 +53,6 @@ public class LightOverlayRenderer implements Consumer<PoseStack> {
     }
     
     private void renderLevels(PoseStack poses, Camera camera, BlockPos playerPos, int playerPosX, int playerPosY, int playerPosZ, int chunkRange, CollisionContext collisionContext) {
-        RenderSystem.enableTexture();
         RenderSystem.depthMask(true);
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
         BlockPos.MutableBlockPos downMutable = new BlockPos.MutableBlockPos();
@@ -93,13 +92,12 @@ public class LightOverlayRenderer implements Consumer<PoseStack> {
         float size = 0.07F;
         poses.scale(-size, -size, size);
         float float_3 = (float) (-font.width(text)) / 2.0F + 0.4f;
-        font.drawInBatch(text, float_3, -3.5f, level > LightOverlay.higherCrossLevel ? 0xff042404 : (LightOverlay.lowerCrossLevel >= 0 && level > LightOverlay.lowerCrossLevel ? 0xff0066ff : 0xff731111), false, poses.last().pose(), source, false, 0, 15728880);
+        font.drawInBatch(text, float_3, -3.5f, level > LightOverlay.higherCrossLevel ? 0xff042404 : (LightOverlay.lowerCrossLevel >= 0 && level > LightOverlay.lowerCrossLevel ? 0xff0066ff : 0xff731111), false, poses.last().pose(), source, Font.DisplayMode.NORMAL, 0, 15728880);
         poses.popPose();
     }
     
     private void renderCrosses(PoseStack poses, Camera camera, BlockPos playerPos, int playerPosX, int playerPosY, int playerPosZ, int chunkRange, CollisionContext collisionContext) {
         RenderSystem.enableDepthTest();
-        RenderSystem.disableTexture();
         RenderSystem.disableBlend();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.lineWidth(LightOverlay.lineWidth);
@@ -133,7 +131,6 @@ public class LightOverlayRenderer implements Consumer<PoseStack> {
         tesselator.end();
         RenderSystem.lineWidth(1.0F);
         RenderSystem.enableBlend();
-        RenderSystem.enableTexture();
     }
     
     public void renderCross(Matrix4f pose, BufferBuilder builder, Camera camera, Level world, BlockPos pos, int color, CollisionContext collisionContext) {
@@ -152,10 +149,10 @@ public class LightOverlayRenderer implements Consumer<PoseStack> {
         double x = pos.getX() - cameraX;
         double y = pos.getY() - cameraY + blockOffset;
         double z = pos.getZ() - cameraZ;
-        builder.vertex(x + .01, y, z + .01).color(red, green, blue, 255).endVertex();
-        builder.vertex(x + .99, y, z + .99).color(red, green, blue, 255).endVertex();
-        builder.vertex(x + .99, y, z + .01).color(red, green, blue, 255).endVertex();
-        builder.vertex(x + .01, y, z + .99).color(red, green, blue, 255).endVertex();
+        builder.vertex(pose, (float)(x + .01D), (float)y, (float)(z + .01D)).color(red, green, blue, 255).endVertex();
+        builder.vertex(pose, (float)(x + .99D), (float)y, (float)(z + .99D)).color(red, green, blue, 255).endVertex();
+        builder.vertex(pose, (float)(x + .99D), (float)y, (float)(z + .01D)).color(red, green, blue, 255).endVertex();
+        builder.vertex(pose, (float)(x + .01D), (float)y, (float)(z + .99D)).color(red, green, blue, 255).endVertex();
     }
     
     public boolean isFrustumVisible(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
