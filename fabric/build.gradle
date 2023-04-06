@@ -50,7 +50,7 @@ dependencies {
 
 shadowJar {
     configurations = [project.configurations.shadowCommon]
-    classifier "dev-shadow"
+    archiveClassifier.set("dev-shadow")
 }
 
 prepareRemapJar {
@@ -60,9 +60,9 @@ prepareRemapJar {
 remapJar {
     dependsOn(shadowJar)
     inputFile.set(shadowJar.archivePath)
-    classifier null
+    archiveClassifier.set(null)
 }
 
 jar {
-    classifier "dev"
+    archiveClassifier.set("dev")
 }

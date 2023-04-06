@@ -47,7 +47,7 @@ shadowJar {
     exclude "fabric.mod.json"
 
     configurations = [project.configurations.shadow]
-    classifier "shadow"
+    archiveClassifier.set("shadow")
 }
 
 prepareRemapJar {
